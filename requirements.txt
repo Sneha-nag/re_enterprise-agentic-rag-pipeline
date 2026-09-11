@@ -1,0 +1,20 @@
+# Install: pip install -r requirements.txt
+# Or editable: pip install -e ".[dev]"
+langchain>=0.3.14,<0.4
+langchain-core>=0.3.29
+langgraph>=0.2.60
+langchain-groq>=0.2.4
+langchain-google-genai>=2.0.9
+langchain-openai>=0.3.0
+langchain-huggingface>=0.1.2
+langchain-chroma>=0.2.0
+langchain-text-splitters>=0.3.0
+chromadb>=0.5.23
+sentence-transformers>=3.3.0
+typer>=0.15.0
+httpx>=0.28.0
+python-dotenv>=1.0.1
+pydantic-settings>=2.7.0
+pypdf>=5.1.0
+beautifulsoup4>=4.12.3
+pytest>=8.3.0
