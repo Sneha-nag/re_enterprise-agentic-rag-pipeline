@@ -34,7 +34,7 @@ class Settings(BaseSettings):
     groq_api_key: str | None = None
     groq_model: str = "llama-3.1-8b-instant"
     google_api_key: str | None = None
-    gemini_model: str = "gemini-2.0-flash"
+    gemini_model: str = "gemini-3.6-flash"
     openai_api_key: str | None = None
     openai_model: str = "gpt-4o-mini"
     embedding_backend: str = "huggingface"
