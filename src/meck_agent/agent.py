@@ -5,7 +5,7 @@ from pathlib import Path
 from langchain_core.messages import AIMessage, BaseMessage, HumanMessage
 
 from meck_agent.config import Settings
-from meck_agent.llm import get_chat_model
+from meck_agent.llm import ensure_gemini_thought_signature_support, get_chat_model
 from meck_agent.tools import make_tools
 
 SYSTEM_PROMPT = """You are a learning assistant for a North Carolina real estate broker.
@@ -35,6 +35,10 @@ def build_agent(
     settings = settings or Settings()
     db_path = db_path or settings.db_path
     chroma_path = chroma_path or settings.chroma_path
+    if (settings.llm_provider or "").strip().lower() in {"gemini", "google"}:
+        # Gemini 3 tool loops must replay the original AIMessage (and its
+        # thought signatures). Do not rebuild AIMessages from tool_calls only.
+        ensure_gemini_thought_signature_support()
     model = get_chat_model(settings)
     tools = make_tools(db_path, chroma_path, embeddings=embeddings)
     from langgraph.prebuilt import create_react_agent
@@ -42,12 +46,37 @@ def build_agent(
     return create_react_agent(model, tools, prompt=SYSTEM_PROMPT)
 
 
+def _message_text(content: object) -> str:
+    """Flatten AIMessage content, skipping Gemini thinking blocks."""
+    if isinstance(content, str):
+        return content
+    if isinstance(content, list):
+        parts: list[str] = []
+        for block in content:
+            if isinstance(block, str):
+                if block.strip():
+                    parts.append(block)
+                continue
+            if not isinstance(block, dict):
+                continue
+            if block.get("type") == "thinking" or block.get("thought"):
+                continue
+            text = block.get("text")
+            if isinstance(text, str) and text.strip():
+                parts.append(text)
+        return "\n".join(parts)
+    return str(content) if content else ""
+
+
 def last_ai_text(messages: list[BaseMessage]) -> str:
     for message in reversed(messages):
-        if isinstance(message, AIMessage) and message.content:
-            if isinstance(message.content, str):
-                return message.content
-            return str(message.content)
+        if not isinstance(message, AIMessage):
+            continue
+        if getattr(message, "tool_calls", None):
+            continue
+        text = _message_text(message.content)
+        if text.strip():
+            return text
     return ""
 
 

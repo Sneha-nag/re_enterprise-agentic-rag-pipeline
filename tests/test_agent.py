@@ -3,6 +3,18 @@ from langchain_core.messages import AIMessage, HumanMessage, ToolMessage
 from meck_agent.agent import format_trace, last_ai_text
 
 
+def test_last_ai_text_skips_thinking_blocks():
+    messages = [
+        AIMessage(
+            content=[
+                {"type": "thinking", "thinking": "internal scratch work"},
+                {"type": "text", "text": "Dual agency needs written consent."},
+            ]
+        )
+    ]
+    assert last_ai_text(messages) == "Dual agency needs written consent."
+
+
 def test_last_ai_text_skips_empty_tool_calls():
     messages = [
         HumanMessage(content="hi"),

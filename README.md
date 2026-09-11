@@ -49,7 +49,7 @@ cp .env.example .env
 Add **one** key to `.env`:
 
 - Groq: https://console.groq.com/ (set `LLM_PROVIDER=groq` and `GROQ_API_KEY`)
-- Gemini: https://aistudio.google.com/apikey (set `LLM_PROVIDER=gemini` and `GOOGLE_API_KEY`)
+- Gemini: https://aistudio.google.com/apikey (set `LLM_PROVIDER=gemini` and `GOOGLE_API_KEY`). Gemini 3.x models (for example `gemini-3.6-flash`) require thinking / thought signatures on tool calls; the CLI enables that automatically.
 
 If Hugging Face model download is slow, set `EMBEDDING_BACKEND=hash` in `.env`. Quality drops; ingest and tests still run.
 
