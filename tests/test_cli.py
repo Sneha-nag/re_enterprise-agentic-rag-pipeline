@@ -10,3 +10,9 @@ def test_cli_paths():
     assert result.exit_code == 0
     assert "db:" in result.stdout
     assert "chroma:" in result.stdout
+
+
+def test_cli_ui_help():
+    result = runner.invoke(app, ["ui", "--help"])
+    assert result.exit_code == 0
+    assert "Streamlit" in result.stdout

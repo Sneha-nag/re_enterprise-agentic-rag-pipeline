@@ -120,6 +120,36 @@ def chat(
 
 
 @app.command()
+def ui(
+    port: int = typer.Option(8501, help="Streamlit port."),
+    host: str = typer.Option("localhost", help="Bind address."),
+) -> None:
+    """Open the Streamlit chat UI."""
+    import subprocess
+    import sys
+
+    from meck_agent.config import find_project_root
+
+    app_path = find_project_root() / "app.py"
+    if not app_path.exists():
+        raise typer.Exit(f"Could not find {app_path}")
+    command = [
+        sys.executable,
+        "-m",
+        "streamlit",
+        "run",
+        str(app_path),
+        "--server.port",
+        str(port),
+        "--server.address",
+        host,
+        "--browser.gatherUsageStats",
+        "false",
+    ]
+    raise SystemExit(subprocess.call(command))
+
+
+@app.command()
 def paths() -> None:
     """Show resolved data locations."""
     settings: Settings = get_settings()

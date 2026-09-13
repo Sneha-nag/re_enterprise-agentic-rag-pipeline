@@ -1,6 +1,6 @@
 from langchain_core.messages import AIMessage, HumanMessage, ToolMessage
 
-from meck_agent.agent import format_trace, last_ai_text
+from meck_agent.agent import collect_tool_calls, format_trace, last_ai_text
 
 
 def test_last_ai_text_skips_thinking_blocks():
@@ -38,3 +38,5 @@ def test_format_trace_includes_tool_name():
     trace = format_trace(messages)
     assert "[tool call] lookup_parcel" in trace
     assert "[tool result]" in trace
+    calls = collect_tool_calls(messages)
+    assert calls == [{"name": "lookup_parcel", "args": {"pin_or_address": "12501234"}}]

@@ -95,15 +95,29 @@ def format_trace(messages: list[BaseMessage]) -> str:
     return "\n".join(lines)
 
 
-def ask_question(
+def collect_tool_calls(messages: list[BaseMessage]) -> list[dict]:
+    calls: list[dict] = []
+    for message in messages:
+        if not isinstance(message, AIMessage):
+            continue
+        for call in getattr(message, "tool_calls", None) or []:
+            calls.append(
+                {
+                    "name": call.get("name"),
+                    "args": call.get("args") or {},
+                }
+            )
+    return calls
+
+
+def ask_question_detailed(
     question: str,
     settings: Settings | None = None,
     *,
     db_path: Path | None = None,
     chroma_path: Path | None = None,
     embeddings=None,
-    verbose: bool = False,
-) -> str:
+) -> dict:
     agent = build_agent(
         settings,
         db_path=db_path,
@@ -113,7 +127,29 @@ def ask_question(
     result = agent.invoke({"messages": [("user", question)]})
     messages = result.get("messages") or []
     answer = last_ai_text(messages)
+    return {
+        "answer": answer,
+        "tool_calls": collect_tool_calls(messages),
+        "trace": format_trace(messages),
+    }
+
+
+def ask_question(
+    question: str,
+    settings: Settings | None = None,
+    *,
+    db_path: Path | None = None,
+    chroma_path: Path | None = None,
+    embeddings=None,
+    verbose: bool = False,
+) -> str:
+    detail = ask_question_detailed(
+        question,
+        settings,
+        db_path=db_path,
+        chroma_path=chroma_path,
+        embeddings=embeddings,
+    )
     if verbose:
-        trace = format_trace(messages)
-        return f"{trace}\n\n---\n{answer}".strip()
-    return answer
+        return f"{detail['trace']}\n\n---\n{detail['answer']}".strip()
+    return detail["answer"]
