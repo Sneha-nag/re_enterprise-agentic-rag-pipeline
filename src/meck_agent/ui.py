@@ -73,10 +73,10 @@ def run_app() -> None:
             st.rerun()
 
         with st.form("live_gis"):
-            st.caption("Live Mecklenburg GIS (attributes only, no map polygons).")
-            zipcode = st.text_input("ZIP prefix", value=settings.default_zip)
-            street = st.text_input("Street fragment", value="")
-            city = st.text_input("City fragment", value="")
+            st.caption("Live county GIS (attributes only).")
+            zipcode = st.text_input("ZIP", value=settings.default_zip)
+            street = st.text_input("Street")
+            city = st.text_input("City")
             limit = st.number_input("Max parcels", min_value=10, max_value=5000, value=500, step=10)
             live = st.form_submit_button("Download county subset", use_container_width=True)
         if live:
@@ -117,9 +117,8 @@ def run_app() -> None:
         st.info("No guideline index yet. Use **Index sample guidelines** in the sidebar.")
 
     st.write("Try an example:")
-    example_cols = st.columns(len(EXAMPLE_QUESTIONS))
-    for col, question in zip(example_cols, EXAMPLE_QUESTIONS, strict=True):
-        if col.button(question, key=f"ex-{question[:24]}"):
+    for question in EXAMPLE_QUESTIONS:
+        if st.button(question, key=f"ex-{question[:32]}", use_container_width=True):
             st.session_state.pending_question = question
             st.rerun()
 
